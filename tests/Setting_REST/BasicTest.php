@@ -25,80 +25,115 @@ require_once 'Pluf.php';
  */
 class Setting_REST_BasicTest extends TestCase
 {
-
+    
+    
+    private static $client = null;
+    
+    private static $user = null;
+    
     /**
      * @beforeClass
      */
-    public static function installApps()
+    public static function createDataBase()
     {
-        Pluf::start(dirname(__FILE__) . '/../conf/config.rest.php');
+        Pluf::start(array(
+            'general_domain' => 'localhost',
+            'general_admin_email' => array(
+                'root@localhost'
+            ),
+            'general_from_email' => 'test@localhost',
+            'middleware_classes' => array(
+                'Pluf_Middleware_Session'
+            ),
+            'debug' => true,
+            'test_unit' => true,
+            'languages' => array(
+                'fa',
+                'en'
+            ),
+            'tmp_folder' => dirname(__FILE__) . '/../tmp',
+            'template_folders' => array(
+                dirname(__FILE__) . '/../templates'
+            ),
+            'upload_path' => dirname(__FILE__) . '/../tmp',
+            'template_tags' => array(),
+            'time_zone' => 'Asia/Tehran',
+            'encoding' => 'UTF-8',
+            
+            'secret_key' => '5a8d7e0f2aad8bdab8f6eef725412850',
+            'user_signup_active' => true,
+            'user_avatra_max_size' => 2097152,
+            'auth_backends' => array(
+                'Pluf_Auth_ModelBackend'
+            ),
+            'pluf_use_rowpermission' => true,
+            'db_engine' => 'MySQL',
+            'db_version' => '5.5.33',
+            'db_login' => 'root',
+            'db_password' => '',
+            'db_server' => 'localhost',
+            'db_database' => 'test',
+            'db_table_prefix' => '_test_setting_rest_',
+            
+            'mail_backend' => 'mail',
+            'user_avatar_default' => dirname(__FILE__) . '/../conf/avatar.svg'
+        ));
         $m = new Pluf_Migration(array(
             'Pluf',
-            'Tenant',
+            'User',
             'Setting'
         ));
         $m->install();
         // Test user
-        $user = new Pluf_User();
-        $user->login = 'test';
-        $user->first_name = 'test';
-        $user->last_name = 'test';
-        $user->email = 'toto@example.com';
-        $user->setPassword('test');
-        $user->active = true;
-        $user->administrator = true;
-        if (true !== $user->create()) {
+        self::$user = new Pluf_User();
+        self::$user->login = 'test';
+        self::$user->first_name = 'test';
+        self::$user->last_name = 'test';
+        self::$user->email = 'toto@example.com';
+        self::$user->setPassword('test');
+        self::$user->active = true;
+        self::$user->administrator = true;
+        if (true !== self::$user->create()) {
             throw new Exception();
         }
         
-        // Test tenant
-        $tenant = new Pluf_Tenant();
-        $tenant->domain = 'localhost';
-        $tenant->subdomain = 'test';
-        $tenant->validate = true;
-        if (true !== $tenant->create()) {
-            throw new Pluf_Exception('Faile to create new tenant');
-        }
-        
-        $client = new Test_Client(array());
-        $GLOBALS['_PX_request']->tenant = $tenant;
-        
-        $per = new Pluf_RowPermission();
-        $per->version = 1;
-        $per->model_id = $tenant->id;
-        $per->model_class = 'Pluf_Tenant';
-        $per->owner_id = $user->id;
-        $per->owner_class = 'Pluf_User';
-        $per->create();
+        self::$client = new Test_Client(array(
+            array(
+                'app' => 'Setting',
+                'regex' => '#^/api/setting#',
+                'base' => '',
+                'sub' => include 'Setting/urls.php'
+            ),
+            array(
+                'app' => 'User',
+                'regex' => '#^/api/user#',
+                'base' => '',
+                'sub' => include 'User/urls.php'
+            )
+        ));
     }
-
+    
     /**
      * @afterClass
      */
-    public static function uninstallApps()
+    public static function removeDatabses()
     {
         $m = new Pluf_Migration(array(
             'Pluf',
-            'Tenant',
+            'User',
             'Setting'
         ));
         $m->unInstall();
     }
-
+    
     /**
-     * Getting tenant tickets
-     *
-     * Call tenant to get list of tickets
-     *
      * @test
      */
-    public function testFindSettings()
+    public function listSapsRestTest()
     {
-        // find teckets
-        $response = $client->get('/api/setting/find');
+        $response = self::$client->get('/api/setting/find');
         Test_Assert::assertResponseNotNull($response, 'Find result is empty');
         Test_Assert::assertResponseStatusCode($response, 200, 'Find status code is not 200');
         Test_Assert::assertResponsePaginateList($response, 'Find result is not JSON paginated list');
     }
 }
-
