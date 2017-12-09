@@ -3,6 +3,7 @@
 	<testsuites>
 		<testsuite name="Pluf">
 			<directory>./Setting_REST/</directory>
+			<directory>./Setting_Template/</directory>
 		</testsuite>
 	</testsuites>
 
