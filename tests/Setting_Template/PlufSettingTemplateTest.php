@@ -17,20 +17,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\IncompleteTestError;
 require_once 'Pluf.php';
 
 /**
  * @backupGlobals disabled
  * @backupStaticAttributes disabled
  */
-class Setting_REST_BasicTest extends TestCase
+class PlufSettingTemplateTest extends TestCase
 {
-    
-    
-    private static $client = null;
-    
-    private static $user = null;
-    
+
     /**
      * @beforeClass
      */
@@ -44,38 +40,8 @@ class Setting_REST_BasicTest extends TestCase
             'Setting'
         ));
         $m->install();
-        // Test user
-        self::$user = new User();
-        self::$user->login = 'test';
-        self::$user->first_name = 'test';
-        self::$user->last_name = 'test';
-        self::$user->email = 'toto@example.com';
-        self::$user->setPassword('test');
-        self::$user->active = true;
-        self::$user->administrator = true;
-        if (true !== self::$user->create()) {
-            throw new Pluf_Exception();
-        }
-        
-        $role = Role::getFromString('Pluf.owner');
-        self::$user->setAssoc($role);
-        
-        self::$client = new Test_Client(array(
-            array(
-                'app' => 'Setting',
-                'regex' => '#^/api/setting#',
-                'base' => '',
-                'sub' => include 'Setting/urls.php'
-            ),
-            array(
-                'app' => 'User',
-                'regex' => '#^/api/user#',
-                'base' => '',
-                'sub' => include 'User/urls.php'
-            )
-        ));
     }
-    
+
     /**
      * @afterClass
      */
@@ -89,15 +55,31 @@ class Setting_REST_BasicTest extends TestCase
         ));
         $m->unInstall();
     }
-    
+
     /**
      * @test
      */
-    public function listSapsRestTest()
+    public function testSetting1()
     {
-        $response = self::$client->get('/api/setting/find');
-        Test_Assert::assertResponseNotNull($response, 'Find result is empty');
-        Test_Assert::assertResponseStatusCode($response, 200, 'Find status code is not 200');
-        Test_Assert::assertResponsePaginateList($response, 'Find result is not JSON paginated list');
+        $folders = array(
+            __DIR__ . '/../templates'
+        );
+        $tmpl = new Pluf_Template('tpl-setting1.html', $folders);
+        $this->assertEquals(Setting_Service::get('setting1', 'default value'), $tmpl->render());
+    }
+
+    /**
+     * @test
+     */
+    public function testSetting2()
+    {
+        $folders = array(
+            __DIR__ . '/../templates'
+        );
+        $value = 'Random val:' . rand();
+        Setting_Service::set('setting2', $value);
+        $tmpl = new Pluf_Template('tpl-setting2.html', $folders);
+        $this->assertEquals($value, $tmpl->render());
     }
 }
+
