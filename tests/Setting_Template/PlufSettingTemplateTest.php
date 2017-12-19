@@ -27,84 +27,54 @@ require_once 'Pluf.php';
 class PlufSettingTemplateTest extends TestCase
 {
 
-    protected function setUp ()
+    /**
+     * @beforeClass
+     */
+    public static function createDataBase()
     {
-        Pluf::start(
-                array(
-                        'test' => false,
-                        'timezone' => 'Europe/Berlin',
-                        'debug' => true,
-                        'installed_apps' => array(
-                                'Pluf'
-                        ),
-                        'tmp_folder' => dirname(__FILE__) . '/../tmp',
-                        'templates_folder' => array(
-                                dirname(__FILE__) . '/../templates'
-                        ),
-                        'template_tags' => array(
-                                'setting' => 'Setting_Template_Tag_Setting'
-                        ),
-                        'pluf_use_rowpermission' => true,
-                        'mimetype' => 'text/html',
-                        'app_views' => dirname(__FILE__) . '/views.php',
-                        'db_login' => 'testpluf',
-                        'db_password' => 'testpluf',
-                        'db_server' => 'localhost',
-                        'db_database' => dirname(__FILE__) .
-                                 '/../tmp/tmp.sqlite.db',
-                                'app_base' => '/testapp',
-                                'url_format' => 'simple',
-                                'db_table_prefix' => 'bank_unit_tests_',
-                                'db_version' => '5.0',
-                                'db_engine' => 'SQLite',
-                                'bank_debug' => true
-                ));
-        
-        $db = Pluf::db();
-        $schema = Pluf::factory('Pluf_DB_Schema', $db);
-        $models = array(
-                'Pluf_Configuration'
-        );
-        foreach ($models as $model) {
-            $schema->model = Pluf::factory($model);
-            $schema->dropTables();
-            if (true !== ($res = $schema->createTables())) {
-                throw new Exception($res);
-            }
-        }
+        Pluf::start(__DIR__ . '/../conf/mysql.conf.php');
+        $m = new Pluf_Migration(array(
+            'Pluf',
+            'User',
+            'Role',
+            'Setting'
+        ));
+        $m->install();
     }
 
     /**
      * @afterClass
      */
-    public static function removeDatabses ()
+    public static function removeDatabses()
     {
-        $db = Pluf::db();
-        $schema = Pluf::factory('Pluf_DB_Schema', $db);
-        $models = array(
-                'Pluf_Configuration'
-        );
-        foreach ($models as $model) {
-            $schema->model = Pluf::factory($model);
-            $schema->dropTables();
-        }
+        $m = new Pluf_Migration(array(
+            'Pluf',
+            'User',
+            'Role',
+            'Setting'
+        ));
+        $m->unInstall();
     }
 
-    public function testSetting1 ()
+    /**
+     * @test
+     */
+    public function testSetting1()
     {
         $folders = array(
-                dirname(__FILE__)
+            __DIR__ . '/../templates'
         );
         $tmpl = new Pluf_Template('tpl-setting1.html', $folders);
-        $this->assertEquals(
-                Setting_Service::get('setting1', 'default value'), 
-                $tmpl->render());
+        $this->assertEquals(Setting_Service::get('setting1', 'default value'), $tmpl->render());
     }
 
-    public function testSetting2 ()
+    /**
+     * @test
+     */
+    public function testSetting2()
     {
         $folders = array(
-                dirname(__FILE__)
+            __DIR__ . '/../templates'
         );
         $value = 'Random val:' . rand();
         Setting_Service::set('setting2', $value);
