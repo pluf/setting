@@ -23,7 +23,7 @@ require_once 'Pluf.php';
  * @backupGlobals disabled
  * @backupStaticAttributes disabled
  */
-class Setting_REST_BasicTest extends TestCase
+class Setting_ServiceTest extends TestCase
 {
 
     /**

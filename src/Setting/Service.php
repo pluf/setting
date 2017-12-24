@@ -100,7 +100,7 @@ class Setting_Service
                 ));
                 if (isset($setting)) {
                     $setting->value = $val['value'];
-                    $setting->save();
+                    $setting->update();
                 } else {
                     $setting = new Setting();
                     $setting->value = $val['value'];
