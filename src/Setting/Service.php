@@ -91,11 +91,10 @@ class Setting_Service
         foreach (self::$inMemory as $key => $val) {
             if ($val['derty']) {
                 // TODO: maso, 2017: load value
-                $sql = new Pluf_SQL('type=%s AND `key`=%s', array(
-                    Pluf_ConfigurationType::APPLICATION,
+                $sql = new Pluf_SQL('`key`=%s', array(
                     $key
                 ));
-                $setting = new Pluf_Configuration();
+                $setting = new Setting();
                 $setting = $setting->getOne(array(
                     'filter' => $sql->gen()
                 ));
@@ -103,10 +102,10 @@ class Setting_Service
                     $setting->value = $val['value'];
                     $setting->save();
                 } else {
-                    $setting = new Pluf_Configuration();
+                    $setting = new Setting();
                     $setting->value = $val['value'];
                     $setting->key = $key;
-                    $setting->type = Pluf_ConfigurationType::APPLICATION;
+                    $setting->type = Setting::MOD_PUBLIC;
                     $setting->create();
                 }
             }
