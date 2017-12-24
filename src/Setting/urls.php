@@ -51,13 +51,7 @@ return array(
         )
     ),
     array(
-        'regex' => '#^/(?P<key>[^/]+)$#',
-        'model' => 'Setting_Views',
-        'method' => 'get',
-        'http-method' => 'GET'
-    ),
-    array(
-        'regex' => '#^/(?P<key>\d+)$#',
+        'regex' => '#^/(?P<modelId>\d+)$#',
         'model' => 'Pluf_Views',
         'method' => 'getObject',
         'http-method' => 'GET',
@@ -67,6 +61,12 @@ return array(
     ),
     array(
         'regex' => '#^/(?P<key>[^/]+)$#',
+        'model' => 'Setting_Views',
+        'method' => 'get',
+        'http-method' => 'GET'
+    ),
+    array(
+        'regex' => '#^/(?P<modelId>[^/]+)$#',
         'model' => 'Pluf_Views',
         'method' => 'deleteObject',
         'http-method' => 'DELETE',
@@ -90,7 +90,7 @@ return array(
         )
     ),
     array(
-        'regex' => '#^/(?P<key>[^/]+)$#',
+        'regex' => '#^/(?P<modelId>\d+)$#',
         'model' => 'Pluf_Views',
         'method' => 'updateObject',
         'http-method' => 'POST',
