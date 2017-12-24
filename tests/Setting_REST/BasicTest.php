@@ -25,12 +25,11 @@ require_once 'Pluf.php';
  */
 class Setting_REST_BasicTest extends TestCase
 {
-    
-    
+
     private static $client = null;
-    
+
     private static $user = null;
-    
+
     /**
      * @beforeClass
      */
@@ -44,21 +43,13 @@ class Setting_REST_BasicTest extends TestCase
             'Setting'
         ));
         $m->install();
-        // Test user
-        self::$user = new User();
-        self::$user->login = 'test';
-        self::$user->first_name = 'test';
-        self::$user->last_name = 'test';
-        self::$user->email = 'toto@example.com';
-        self::$user->setPassword('test');
-        self::$user->active = true;
-        self::$user->administrator = true;
-        if (true !== self::$user->create()) {
-            throw new Pluf_Exception();
-        }
+        $m->init();
         
+        // TODO: update user api to get user by login directly
+        $user = new User();
+        $user = $user->getUser('admin');
         $role = Role::getFromString('Pluf.owner');
-        self::$user->setAssoc($role);
+        $user->setAssoc($role);
         
         self::$client = new Test_Client(array(
             array(
@@ -75,7 +66,7 @@ class Setting_REST_BasicTest extends TestCase
             )
         ));
     }
-    
+
     /**
      * @afterClass
      */
@@ -89,15 +80,102 @@ class Setting_REST_BasicTest extends TestCase
         ));
         $m->unInstall();
     }
-    
+
     /**
+     * Getting list of properties
+     *
      * @test
      */
-    public function listSapsRestTest()
+    public function anonymousCanGetListOfSettings()
     {
         $response = self::$client->get('/api/setting/find');
         Test_Assert::assertResponseNotNull($response, 'Find result is empty');
         Test_Assert::assertResponseStatusCode($response, 200, 'Find status code is not 200');
         Test_Assert::assertResponsePaginateList($response, 'Find result is not JSON paginated list');
+    }
+
+    /**
+     * Getting list of properties with admin
+     *
+     * @test
+     */
+    public function adminCanGetListOfSettings()
+    {
+        // Login
+        $response = self::$client->post('/api/user/login', array(
+            'login' => 'admin',
+            'password' => 'admin'
+        ));
+        Test_Assert::assertResponseStatusCode($response, 200, 'Fail to login');
+        
+        // Getting list
+        $response = self::$client->get('/api/setting/find');
+        Test_Assert::assertResponseNotNull($response, 'Find result is empty');
+        Test_Assert::assertResponseStatusCode($response, 200, 'Find status code is not 200');
+        Test_Assert::assertResponsePaginateList($response, 'Find result is not JSON paginated list');
+    }
+
+    /**
+     * Create a new setting in system
+     *
+     * @test
+     */
+    public function adminCanCreateASetting()
+    {
+        // Login
+        $response = self::$client->post('/api/user/login', array(
+            'login' => 'admin',
+            'password' => 'admin'
+        ));
+        Test_Assert::assertResponseStatusCode($response, 200, 'Fail to login');
+        
+        // Getting list
+        $values = array(
+            'key' => 'KEY-TEST-' . rand(),
+            'value' => 'NOT SET',
+            'mode' => Setting::MOD_PUBLIC
+        );
+        $response = self::$client->post('/api/setting/new', $values);
+        Test_Assert::assertResponseNotNull($response, 'Find result is empty');
+        Test_Assert::assertResponseStatusCode($response, 200, 'Find status code is not 200');
+        
+        $setting = new Setting();
+        $list = $setting->getList();
+        Test_Assert::assertTrue(sizeof($list) > 0, 'Setting is not created');
+        Test_Assert::assertEquals($values['value'], Setting_Service::get($values['key']), 'Values are not equal.');
+    }
+
+    /**
+     * Create and update a new setting in system by admin
+     *
+     * @test
+     */
+    public function adminCanCreateAndGetSettingByKey()
+    {
+        // Login
+        $response = self::$client->post('/api/user/login', array(
+            'login' => 'admin',
+            'password' => 'admin'
+        ));
+        Test_Assert::assertResponseStatusCode($response, 200, 'Fail to login');
+        
+        // Getting list
+        $values = array(
+            'key' => 'KEY-TEST-' . rand(),
+            'value' => 'NOT SET',
+            'mode' => Setting::MOD_PUBLIC
+        );
+        $response = self::$client->post('/api/setting/new', $values);
+        Test_Assert::assertResponseNotNull($response, 'Find result is empty');
+        Test_Assert::assertResponseStatusCode($response, 200, 'Find status code is not 200');
+        
+        $setting = new Setting();
+        $list = $setting->getList();
+        Test_Assert::assertTrue(sizeof($list) > 0, 'Setting is not created');
+        Test_Assert::assertEquals($values['value'], Setting_Service::get($values['key']), 'Values are not equal.');
+        
+        $response = self::$client->get('/api/setting/' . $values['key']);
+        Test_Assert::assertResponseNotNull($response, 'Find result is empty');
+        Test_Assert::assertResponseStatusCode($response, 200, 'Find status code is not 200');
     }
 }

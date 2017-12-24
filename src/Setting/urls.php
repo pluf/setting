@@ -57,12 +57,33 @@ return array(
         'http-method' => 'GET'
     ),
     array(
+        'regex' => '#^/(?P<key>\d+)$#',
+        'model' => 'Pluf_Views',
+        'method' => 'getObject',
+        'http-method' => 'GET',
+        'params' => array(
+            'model' => 'Setting'
+        )
+    ),
+    array(
         'regex' => '#^/(?P<key>[^/]+)$#',
         'model' => 'Pluf_Views',
         'method' => 'deleteObject',
         'http-method' => 'DELETE',
         'params' => array(
-            'model' => 'Setting',
+            'model' => 'Setting'
+        ),
+        'precond' => array(
+            'User_Precondition::ownerRequired'
+        )
+    ),
+    array(
+        'regex' => '#^/new$#',
+        'model' => 'Pluf_Views',
+        'method' => 'createObject',
+        'http-method' => 'POST',
+        'params' => array(
+            'model' => 'Setting'
         ),
         'precond' => array(
             'User_Precondition::ownerRequired'
@@ -74,7 +95,7 @@ return array(
         'method' => 'updateObject',
         'http-method' => 'POST',
         'params' => array(
-            'model' => 'Setting',
+            'model' => 'Setting'
         ),
         'precond' => array(
             'User_Precondition::ownerRequired'

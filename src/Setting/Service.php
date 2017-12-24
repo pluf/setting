@@ -44,7 +44,7 @@ class Setting_Service
      * @param object $defValue
      * @return boolean|object|string
      */
-    public static function get($key, $defValue)
+    public static function get($key, $defValue = null)
     {
         if (array_key_exists($key, self::$inMemory)) {
             $entary = self::$inMemory[$key];
