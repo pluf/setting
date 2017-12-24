@@ -16,9 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
+/*
+ * Push new settings into the DBMS
+ */
 Pluf_Signal::connect('Pluf_Dispatcher::postDispatch',
         array(
                 'Setting_Service',
                 'flush'
         ), 'Pluf_Dispatcher');
+
+/*
+ * Relations
+ */
 return array ();

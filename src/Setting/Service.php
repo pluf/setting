@@ -20,52 +20,49 @@
 
 /**
  * Application/Tenant level configuration
- * 
- *  Setting is a key-value in the application level which is editable by owners. All
- * settings are read only for others.
- * 
- * @author maso<mostafa.barmshroy@dpq.co.ir>
  *
+ * Setting is a key-value in the application level which is editable by owners. All
+ * settings are read only for others.
+ *
+ * @author maso<mostafa.barmshroy@dpq.co.ir>
+ *        
  */
 class Setting_Service
 {
 
     public static $inMemory = array(
-            // example entry
-            'key' => array(
-                    'value' => 'value',
-                    'derty' => false
-            )
+        // example entry
+        'key' => array(
+            'value' => 'value',
+            'derty' => false
+        )
     );
 
     /**
      *
-     * @param string $key            
-     * @param object $defValue            
+     * @param string $key
+     * @param object $defValue
      * @return boolean|object|string
      */
-    public static function get ($key, $defValue)
+    public static function get($key, $defValue)
     {
         if (array_key_exists($key, self::$inMemory)) {
             $entary = self::$inMemory[$key];
         } else {
             $entary = array(
-                    'value' => $defValue,
-                    'derty' => false
+                'value' => $defValue,
+                'derty' => false
             );
             // TODO: maso, 2017: load value
-            $sql = new Pluf_SQL('`type`=%s AND `key`=%s', 
-                    array(
-                            Pluf_ConfigurationType::APPLICATION,
-                            $key
-                    ));
-            $config = new Pluf_Configuration();
-            $config = $config->getOne(
-                    array(
-                            'filter' => $sql->gen()
-                    ));
-            if (isset($config)) {
-                $entary['value'] = $config->value;
+            $sql = new Pluf_SQL('`key`=%s', array(
+                $key
+            ));
+            $setting = new Setting();
+            $setting = $setting->getOne(array(
+                'filter' => $sql->gen()
+            ));
+            if (isset($setting)) {
+                $entary['value'] = $setting->value;
             } else {
                 $entary['derty'] = true;
             }
@@ -76,43 +73,41 @@ class Setting_Service
 
     /**
      *
-     * @param string $key            
-     * @param object $value            
+     * @param string $key
+     * @param object $value
      */
-    public static function set ($key, $value)
+    public static function set($key, $value)
     {
         self::$inMemory[$key] = array(
-                'value' => $value,
-                'derty' => true
+            'value' => $value,
+            'derty' => true
         );
     }
 
     /**
      */
-    public static function flush ()
+    public static function flush()
     {
         foreach (self::$inMemory as $key => $val) {
             if ($val['derty']) {
                 // TODO: maso, 2017: load value
-                $sql = new Pluf_SQL('type=%s AND `key`=%s', 
-                        array(
-                                Pluf_ConfigurationType::APPLICATION,
-                                $key
-                        ));
-                $config = new Pluf_Configuration();
-                $config = $config->getOne(
-                        array(
-                                'filter' => $sql->gen()
-                        ));
-                if (isset($config)) {
-                    $config->value = $val['value'];
-                    $config->save();
+                $sql = new Pluf_SQL('type=%s AND `key`=%s', array(
+                    Pluf_ConfigurationType::APPLICATION,
+                    $key
+                ));
+                $setting = new Pluf_Configuration();
+                $setting = $setting->getOne(array(
+                    'filter' => $sql->gen()
+                ));
+                if (isset($setting)) {
+                    $setting->value = $val['value'];
+                    $setting->save();
                 } else {
-                    $config = new Pluf_Configuration();
-                    $config->value = $val['value'];
-                    $config->key = $key;
-                    $config->type = Pluf_ConfigurationType::APPLICATION;
-                    $config->create();
+                    $setting = new Pluf_Configuration();
+                    $setting->value = $val['value'];
+                    $setting->key = $key;
+                    $setting->type = Pluf_ConfigurationType::APPLICATION;
+                    $setting->create();
                 }
             }
         }
