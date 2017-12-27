@@ -24,9 +24,6 @@ $cfg = array();
 $cfg['debug'] = true;
 $cfg['installed_apps'] = array(
     'Pluf',
-    'User',
-    'Group',
-    'Role',
     'Setting'
 );
 
@@ -34,8 +31,7 @@ $cfg['installed_apps'] = array(
  * Middlewares
  */
 $cfg['middleware_classes'] = array(
-    'Pluf_Middleware_Session',
-    'User_Middleware_Session',
+    'Pluf_Middleware_Session'
 );
 
 // Temporary folder where the script is writing the compiled templates,
@@ -51,7 +47,7 @@ $cfg['templates_folder'] = array(
 $cfg['template_tags'] = array(
     'setting' => 'Setting_Template_Tag_Setting'
 );
-$cfg['upload_path'] =   __DIR__ . '/../tmp';
+$cfg['upload_path'] = __DIR__ . '/../tmp';
 
 $cfg['secret_key'] = 'simple key';
 

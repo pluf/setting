@@ -38,31 +38,21 @@ class Setting_REST_BasicTest extends TestCase
         Pluf::start(__DIR__ . '/../conf/mysql.conf.php');
         $m = new Pluf_Migration(array(
             'Pluf',
-            'User',
-            'Role',
             'Setting'
         ));
         $m->install();
         $m->init();
         
-        // TODO: update user api to get user by login directly
-        $user = new User();
-        $user = $user->getUser('admin');
-        $role = Role::getFromString('Pluf.owner');
-        $user->setAssoc($role);
-        
+        $subs = include 'Setting/urls.php';
+        for ($i = 0; $i < sizeof($subs); $i++) {
+            $subs[$i]['precond'] = array();
+        }
         self::$client = new Test_Client(array(
             array(
                 'app' => 'Setting',
                 'regex' => '#^/api/setting#',
                 'base' => '',
-                'sub' => include 'Setting/urls.php'
-            ),
-            array(
-                'app' => 'User',
-                'regex' => '#^/api/user#',
-                'base' => '',
-                'sub' => include 'User/urls.php'
+                'sub' => $subs
             )
         ));
     }
@@ -74,8 +64,6 @@ class Setting_REST_BasicTest extends TestCase
     {
         $m = new Pluf_Migration(array(
             'Pluf',
-            'User',
-            'Role',
             'Setting'
         ));
         $m->unInstall();
@@ -101,13 +89,6 @@ class Setting_REST_BasicTest extends TestCase
      */
     public function adminCanGetListOfSettings()
     {
-        // Login
-        $response = self::$client->post('/api/user/login', array(
-            'login' => 'admin',
-            'password' => 'admin'
-        ));
-        Test_Assert::assertResponseStatusCode($response, 200, 'Fail to login');
-        
         // Getting list
         $response = self::$client->get('/api/setting/find');
         Test_Assert::assertResponseNotNull($response, 'Find result is empty');
@@ -122,13 +103,6 @@ class Setting_REST_BasicTest extends TestCase
      */
     public function adminCanCreateASetting()
     {
-        // Login
-        $response = self::$client->post('/api/user/login', array(
-            'login' => 'admin',
-            'password' => 'admin'
-        ));
-        Test_Assert::assertResponseStatusCode($response, 200, 'Fail to login');
-        
         // Getting list
         $values = array(
             'key' => 'KEY-TEST-' . rand(),
@@ -152,13 +126,6 @@ class Setting_REST_BasicTest extends TestCase
      */
     public function adminCanCreateAndGetSettingByKey()
     {
-        // Login
-        $response = self::$client->post('/api/user/login', array(
-            'login' => 'admin',
-            'password' => 'admin'
-        ));
-        Test_Assert::assertResponseStatusCode($response, 200, 'Fail to login');
-        
         // Getting list
         $values = array(
             'key' => 'KEY-TEST-' . rand(),
@@ -186,13 +153,6 @@ class Setting_REST_BasicTest extends TestCase
      */
     public function adminCanCreateAndGetSettingById()
     {
-        // Login
-        $response = self::$client->post('/api/user/login', array(
-            'login' => 'admin',
-            'password' => 'admin'
-        ));
-        Test_Assert::assertResponseStatusCode($response, 200, 'Fail to login');
-        
         // Getting list
         $values = array(
             'key' => 'KEY-TEST-' . rand(),
@@ -220,8 +180,7 @@ class Setting_REST_BasicTest extends TestCase
         Test_Assert::assertResponseNotNull($response, 'Find result is empty');
         Test_Assert::assertResponseStatusCode($response, 200, 'Find status code is not 200');
     }
-    
-    
+
     /**
      * Create and update a new setting in system by admin
      *
@@ -229,13 +188,6 @@ class Setting_REST_BasicTest extends TestCase
      */
     public function adminCanCreateAndDeleteSettingById()
     {
-        // Login
-        $response = self::$client->post('/api/user/login', array(
-            'login' => 'admin',
-            'password' => 'admin'
-        ));
-        Test_Assert::assertResponseStatusCode($response, 200, 'Fail to login');
-        
         // Getting list
         $values = array(
             'key' => 'KEY-TEST-' . rand(),
@@ -267,8 +219,7 @@ class Setting_REST_BasicTest extends TestCase
         ));
         Test_Assert::assertNull($one, 'Setting is not deleted');
     }
-    
-    
+
     /**
      * Create and update a new setting in system by admin
      *
@@ -276,13 +227,6 @@ class Setting_REST_BasicTest extends TestCase
      */
     public function adminCanCreateAndUpdateSettingById()
     {
-        // Login
-        $response = self::$client->post('/api/user/login', array(
-            'login' => 'admin',
-            'password' => 'admin'
-        ));
-        Test_Assert::assertResponseStatusCode($response, 200, 'Fail to login');
-        
         // Getting list
         $values = array(
             'key' => 'KEY-TEST-' . rand(),
@@ -302,11 +246,10 @@ class Setting_REST_BasicTest extends TestCase
         ));
         Test_Assert::assertNotNull($one, 'Setting not found with key');
         
-        $values['value'] = 'new value' .rand();
+        $values['value'] = 'new value' . rand();
         $response = self::$client->post('/api/setting/' . $one->id, $values);
         Test_Assert::assertResponseNotNull($response, 'Find result is empty');
         Test_Assert::assertResponseStatusCode($response, 200, 'Find status code is not 200');
-        
         
         $one = $setting->getOne(array(
             'filter' => $sql->gen()
