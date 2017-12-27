@@ -3,7 +3,7 @@
 	<testsuites>
 		<testsuite name="Setting">
 			<directory>tests/Setting/</directory>
-			<directory>tests/Setting_REST/</directory>
+<!-- 			<directory>tests/Setting_REST/</directory> -->
 			<directory>tests/Setting_Template/</directory>
 		</testsuite>
 	</testsuites>
