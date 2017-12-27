@@ -34,8 +34,6 @@ class Setting_ServiceTest extends TestCase
         Pluf::start(__DIR__ . '/../conf/mysql.conf.php');
         $m = new Pluf_Migration(array(
             'Pluf',
-            'User',
-            'Role',
             'Setting'
         ));
         $m->install();
@@ -49,8 +47,6 @@ class Setting_ServiceTest extends TestCase
     {
         $m = new Pluf_Migration(array(
             'Pluf',
-            'User',
-            'Role',
             'Setting'
         ));
         $m->unInstall();
