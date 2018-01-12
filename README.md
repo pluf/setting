@@ -7,3 +7,7 @@
 
 Settings are key-value object used to manage application options. All
 tenant level modules are allowed to get and update application settings.
+
+### <span style="color:red">Project is moved</span>
+
+<span style="color:red">This Module is moved to </span>[pluf/tenant](https://github.com/pluf/tenant).
